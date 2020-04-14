@@ -65,4 +65,5 @@ grid.arrange(Test_Results_Table)
 # SIDE-BY-SIDE TEST RESULTS GRAPH
 barplot(Test_Results, main="COVID Test Results by State (04/07/20)", col=c("blue","red","green"), beside=TRUE, legend=rownames(Test_Results), cex.names=0.5)
 
-
+# STACKED TEST RESULTS GRAPH
+barplot(Test_Results, main="COVID Test Results", col=c("red","blue","yellow"), legend=rownames(Test_Results), position=stack, cex.names=0.5)
