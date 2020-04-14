@@ -46,3 +46,23 @@ plot1
 plot2 = ggplot(data=daily)+ geom_line(mapping = aes(x=date, y=positive, color = state))+ylab("Positive Tests")+
   xlab("Date")+ggtitle("Positive Tests by State")+ylim(0,25000)
 plot2
+
+# CREATING DATA TABLE
+# Chose most recent date of data available
+daily = subset(daily, date == "2020-04-07")
+
+State <- daily$state
+Positive <- daily$positive
+Negative <- daily$negative
+Pending <- daily$pending
+Test_Results = rbind(Positive, Negative, Pending)
+colnames(Test_Results) <- daily$state
+Test_Results
+library(gridExtra)
+Test_Results_Table <- tableGrob(Test_Results)
+grid.arrange(Test_Results_Table)
+
+# SIDE-BY-SIDE TEST RESULTS GRAPH
+barplot(Test_Results, main="COVID Test Results by State (04/07/20)", col=c("blue","red","green"), beside=TRUE, legend=rownames(Test_Results), cex.names=0.5)
+
+
