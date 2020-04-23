@@ -97,3 +97,70 @@ daily = mutate(daily, positive_thous = positive/1000)
 # GRAPH NUM OF POSITIVE / TOTAL TESTS
 options(scipen=999)
 ggplot(daily) + geom_col(aes(x=State, y=percent_p, fill=positive_thous)) + scale_fill_gradient(low="red", high="yellow") + ggtitle("COVID-19 Positive Tests Compared to Total Tests") + theme(plot.title = element_text(hjust = 0.5)) + xlab("US States") + ylab("Percentage of Positive Tests") + labs(fill = "# of Positive Tests\n(in thousands)")
+
+
+# CODE FOR MAP
+library(plotly)
+library(rjson)
+library(dplyr)
+library(stringr)
+
+data <- fromJSON(file="https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json")
+data$features[[1]]
+
+df <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-19-2020.csv")
+
+# -------------------- Cleaning Data -----------------------#
+# Remove data for countries besides US
+df <- df[!(df$Country_Region != "US"),]
+# Remove provinces/states that are not part of the main 50
+df <- df[!(df$Province_State == "Diamond Princess"),]
+df <- df[!(df$Province_State == "Grand Princess"),]
+df <- df[!(df$Province_State == "Guam"),]
+df <- df[!(df$Province_State == "Northern Mariana Islands"),]
+df <- df[!(df$Province_State == "Puerto Rico"),]
+df <- df[!(df$Province_State == "Recovered"),]
+df <- df[!(df$Province_State == "Virgin Islands"),]
+df <- df[!(df$Admin2 == "Federal Correctional Institution (FCI)"),]
+df <- df[!(df$Admin2 == "Michigan Department of Corrections (MDOC)"),]
+# Add a zero to FIPS codes that need a zero at the beginning
+df$FIPS <- str_pad(df$FIPS, width = 5, side = "left", pad = 0)
+# Manually add missing FIPS codes
+df$FIPS[141] <- 49039
+df$FIPS[726] <- 25007
+df$FIPS[2682] <- 49057
+df$FIPS[387] <- 49053
+df$Admin2[387] <- "Washington"
+
+# ------------------- Data Visualization ------------------#
+g <- list(
+  scope = "usa",
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white')
+)
+
+fig <- plot_ly()
+fig <- fig %>% add_trace(
+  type="choropleth",
+  geojson=data,
+  locations=df$FIPS,
+  z=df$Confirmed,
+  colorscale="Viridis",
+  zmin=0,
+  zmax=15000,
+  marker=list(line=list(
+    width=0)
+  )
+)
+fig <- fig %>% colorbar(title = "Confirmed Cases")
+fig <- fig %>% layout(
+  title = "COVID-19 US Confirmed Cases by County"
+)
+
+fig <- fig %>% layout(
+  geo = g
+)
+
+fig
+
