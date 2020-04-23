@@ -99,20 +99,19 @@ options(scipen=999)
 ggplot(daily) + geom_col(aes(x=State, y=percent_p, fill=positive_thous)) + scale_fill_gradient(low="red", high="yellow") + ggtitle("COVID-19 Positive Tests Compared to Total Tests") + theme(plot.title = element_text(hjust = 0.5)) + xlab("US States") + ylab("Percentage of Positive Tests") + labs(fill = "# of Positive Tests\n(in thousands)")
 
 
-# CODE FOR MAP
+# -------------------------------------------------------- #
+# -------------------- CODE FOR MAP ---------------------- #
+# -------------------------------------------------------- #
+
 library(plotly)
-library(rjson)
 library(dplyr)
-library(stringr)
 
-data <- fromJSON(file="https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json")
-data$features[[1]]
+# Import data file
+df <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/04-22-2020.csv")
 
-df <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-19-2020.csv")
-
-# -------------------- Cleaning Data -----------------------#
-# Remove data for countries besides US
-df <- df[!(df$Country_Region != "US"),]
+# --------------------- Cleaning Data ------------------------- #
+# Alternate NA values to 0
+df[is.na(df)] <- 0
 # Remove provinces/states that are not part of the main 50
 df <- df[!(df$Province_State == "Diamond Princess"),]
 df <- df[!(df$Province_State == "Grand Princess"),]
@@ -121,46 +120,42 @@ df <- df[!(df$Province_State == "Northern Mariana Islands"),]
 df <- df[!(df$Province_State == "Puerto Rico"),]
 df <- df[!(df$Province_State == "Recovered"),]
 df <- df[!(df$Province_State == "Virgin Islands"),]
-df <- df[!(df$Admin2 == "Federal Correctional Institution (FCI)"),]
-df <- df[!(df$Admin2 == "Michigan Department of Corrections (MDOC)"),]
-# Add a zero to FIPS codes that need a zero at the beginning
-df$FIPS <- str_pad(df$FIPS, width = 5, side = "left", pad = 0)
-# Manually add missing FIPS codes
-df$FIPS[141] <- 49039
-df$FIPS[726] <- 25007
-df$FIPS[2682] <- 49057
-df$FIPS[387] <- 49053
-df$Admin2[387] <- "Washington"
+df <- df[!(df$Province_State == "American Samoa"),]
+df <- df[!(df$Province_State == "District of Columbia"),]
+# Reset index after removing rows
+row.names(df) <- NULL
+# Create a column for information displayed when hovering over state
+df$hover <- with(df, paste(Province_State))
+# Add state abbreviations to data frame
+Abbreviations <- factor(c("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID",
+                   "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS",
+                   "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK",
+                   "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV",
+                   "WI", "WY"))
+df <- cbind(df, Abbreviations)
+df <- select(df, Abbreviations, Province_State:hover)
+# --------------------------------------------------------------#
 
-# ------------------- Data Visualization ------------------#
-g <- list(
+# --------------------- Creating Map -------------------------- #
+# Give state boundaries a white color
+bound_color <- list(color = toRGB("white"), width = 2)
+# Specify map details
+map_details <- list(
   scope = "usa",
-  projection = list(type = 'albers usa'),
+  projection = list(type = "albers usa"),
   showlakes = TRUE,
-  lakecolor = toRGB('white')
+  lakecolor = toRGB("white")
+)
+# Plot map
+tracker <- plot_geo(df, locationmode = "USA-states")
+tracker <- tracker %>% add_trace(
+  z = ~Confirmed, text = ~hover, locations = Abbreviations,
+  color = ~Confirmed, colors = "Reds"
+)
+tracker <- tracker %>% colorbar(title = "Thousands of Cases")
+tracker <- tracker %>% layout(
+  title = "COVID-19 US Confirmed Cases",
+  geo = map_details
 )
 
-fig <- plot_ly()
-fig <- fig %>% add_trace(
-  type="choropleth",
-  geojson=data,
-  locations=df$FIPS,
-  z=df$Confirmed,
-  colorscale="Viridis",
-  zmin=0,
-  zmax=15000,
-  marker=list(line=list(
-    width=0)
-  )
-)
-fig <- fig %>% colorbar(title = "Confirmed Cases")
-fig <- fig %>% layout(
-  title = "COVID-19 US Confirmed Cases by County"
-)
-
-fig <- fig %>% layout(
-  geo = g
-)
-
-fig
-
+tracker
