@@ -172,20 +172,21 @@ library(leaflet)
 library(dplyr)
 library(leaflet.extras)
 #import data
-map_daily = read.csv("C:\\Users\\student\\Documents\\Semester 4\\SYS 2202\\Final Project\\4.23 states daily.csv")
+map_daily = read.csv("https://covidtracking.com/api/v1/states/daily.csv")
 
 # Converting the values in state from a factor to a character
 map_daily$state = as.character(map_daily$state)
 
 # Converting the date from a factor to a date
-map_daily$date = as.Date(map_daily$date, format = "%m/%d/%Y")
+#map_daily$date = as.Date(map_daily$date, format = "%m/%d/%Y")
+map_daily <- transform(map_daily, date = as.Date(as.character(date), "%Y%m%d"))
 
 # Removing unnecessary columns
-map_daily = select(daily, date, state, positive, negative, pending, death, total, totalTestResults)
+map_daily = select(map_daily, date, state, positive, negative, pending, death, total, totalTestResults)
 
 
 # State Latitude and Longitude 
-state_lat_long = read.csv("C:\\Users\\student\\Documents\\Semester 4\\SYS 2202\\Final Project\\state_lat_long.csv")
+state_lat_long = read.csv("C:\\Users\\student\\Downloads\\statelatlong.csv")
 
 # Removing unnecessary columns
 state_lat_long = select(state_lat_long, State, Latitude, Longitude)
@@ -198,6 +199,8 @@ names(map_daily)[10]<- 'longitude'
 
 cv_min_date = min(map_daily$date)
 current_date = max(map_daily$date)
+# creat variable for today's data
+cv_today = subset(map_daily, date==current_date) 
 
 #creating the ui
 ui <- fluidPage(
@@ -227,20 +230,25 @@ server <- function(input, output, session) {
     leaflet(map_daily) %>% 
       setView(lng = -99, lat = 45, zoom = 2)  %>% #setting the view over ~ center of North America
       addTiles() %>% 
-      addCircles(data = map_daily, lat = ~ latitude, lng = ~ longitude, weight = 1, 
-                 radius = ~(map_daily$positive), popup = ~as.character(map_daily$positive), 
-                 label = ~as.character(paste0("Positive Cases: ", sep = " ", map_daily$positive)), 
-                 color = ~pal(map_daily$positive), fillOpacity = 0.5)
+      addCircles(data = cv_today, lat = ~ latitude, lng = ~ longitude, weight = 1, 
+                 radius = ~(cv_today$positive)^(1/4), popup = ~as.character(cv_today$positive), 
+                 label = ~as.character(paste0("Positive Cases: ", sep = " ", cv_today$positive)), 
+                 color = ~pal(cv_today$positive), fillOpacity = 0.5)
   })
+  
+  #reactive_db = reactive({
+    #map_daily %>% filter(date == input$plot_date)
+    # reactive = cv_cases %>% filter(date == "2020-04-25")
+ # })
   
   observeEvent(input$plot_date, {
     leafletProxy("mymap") %>% 
       clearMarkers() %>%
       clearShapes() %>%
-      addCircles(data = map_daily, lat = ~ latitude, lng = ~ longitude, weight = 1, 
-                 radius = ~sqrt((map_daily$positive)), popup = ~as.character(map_daily$positive), 
-                 label = ~as.character(paste0("Positive Cases: ", sep = " ", map_daily$positive)), 
-                 color = ~pal(map_daily$positive), fillOpacity = 0.5)
+      addCircles(data = cv_today, lat = ~ latitude, lng = ~ longitude, weight = 1, 
+                 radius = ~sqrt((cv_today$positive)), popup = ~as.character(cv_today$positive), 
+                 label = ~as.character(paste0("Positive Cases: ", sep = " ", cv_today$positive)), 
+                 color = ~pal(cv_today$positive), fillOpacity = 0.5)
   })
   
   
