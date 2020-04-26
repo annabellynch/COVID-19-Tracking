@@ -184,7 +184,7 @@ map_daily <- transform(map_daily, date = as.Date(as.character(date), "%Y%m%d"))
 # Removing unnecessary columns
 map_daily = select(map_daily, date, state, positive, negative, pending, death, total, totalTestResults)
 
-
+#https://www.kaggle.com/washimahmed/usa-latlong-for-state-abbreviations/data#statelatlong.csv
 # State Latitude and Longitude 
 state_lat_long = read.csv("C:\\Users\\student\\Downloads\\statelatlong.csv")
 
