@@ -5,7 +5,8 @@ library(tidyverse)
 library(xlsx)
 
 #reading the csv file
-daily = read.csv("C:\\Users\\student\\Documents\\Semester 4\\SYS 2202\\Final Project\\4.8 states daily.csv")
+daily <- read.csv("~/Downloads/daily.csv")
+View(daily)
 
 
 
