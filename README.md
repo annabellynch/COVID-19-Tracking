@@ -8,7 +8,7 @@ library(data.table)
 
 
 #reading the csv file
-daily <- fread('https://raw.githubusercontent.com/COVID19Tracking/covid-tracking-data/master/data/states_daily_4pm_et.csv')
+daily <- read.csv("https://raw.githubusercontent.com/COVID19Tracking/covid-tracking-data/master/data/states_daily_4pm_et.csv")
 View(daily)
 
 
