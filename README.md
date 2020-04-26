@@ -19,7 +19,7 @@ na_count
 daily$state = as.character(daily$state)
 
 # Converting the date from a factor to a date
-daily$date = as.Date(daily$date, format = "%m/%d/%Y")
+daily <- transform(daily, date = as.Date(as.character(date), "%Y%m%d"))
 
 # Checking that the conversion was successful
 str(daily)
@@ -49,7 +49,7 @@ plot2
 
 # CREATING DATA TABLE
 # Chose most recent date of data available
-daily = subset(daily, date == "2020-04-07")
+daily = subset(daily, date == "2020-04-25")
 
 State <- daily$state
 Positive <- daily$positive
