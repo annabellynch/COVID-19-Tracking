@@ -25,20 +25,20 @@ daily$state = as.character(daily$state)
 # Converting the date from a factor to a date
 daily <- transform(daily, date = as.Date(as.character(date), "%Y%m%d"))
 
-# Checking that the conversion was successful
-str(daily)
-
-#attempting to group by state --> didn't work for some reason
-states = group_by(daily, state)
 
 # Removing unnecessary columns
 daily = select(daily, date, state, positive, negative, pending, death, total, totalTestResults)
 
+#Converts "date" column to date format
+daily <- transform(daily, date = as.Date(as.character(date), "%Y%m%d"))
+
+# Chose most recent date of data available
+daily = subset(daily, date == "2020-04-26")
+# Removing unwanted US territoires (kept 50 states)
+daily = daily[-c(4, 9, 13, 28, 43, 51), ]
+
+# Replace NA values in pending column with zeros
 daily[is.na(daily)] <- 0
-
-
-# Exporting as a csv
-write.xlsx(daily, "C:\\Users\\student\\Documents\\Semester 4\\SYS 2202\\Final Project\\cleaned daily.xlsx")
 
 
 # DATA VISUALIZATIONS
@@ -52,9 +52,6 @@ plot2 = ggplot(data=daily)+ geom_line(mapping = aes(x=date, y=positive, color = 
 plot2
 
 # CREATING DATA TABLE
-# Chose most recent date of data available
-daily = subset(daily, date == "2020-04-25")
-
 State <- daily$state
 Positive <- daily$positive
 Negative <- daily$negative
@@ -65,6 +62,9 @@ Test_Results
 library(gridExtra)
 Test_Results_Table <- tableGrob(Test_Results)
 grid.arrange(Test_Results_Table)
+
+# Feature Extraction
+daily = mutate(daily, percent_p = Positive/Total_Tests, percent_n = Negative/Total_Tests)
 
 # SIDE-BY-SIDE TEST RESULTS GRAPH
 barplot(Test_Results, main="COVID Test Results by State (04/07/20)", col=c("blue","red","green"), beside=TRUE, legend=rownames(Test_Results), cex.names=0.5)
