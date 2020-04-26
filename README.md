@@ -74,7 +74,7 @@ barplot(Test_Results, main="COVID Test Results", col=c("red","blue","yellow"), l
 
 # POPULATION DATA
 library(readxl)
-state_population <- read_excel("State Population Data.xlsx")
+state_population = read.csv("State Population Data 2019.csv")
 View(state_population) 
 
 # Clean data
