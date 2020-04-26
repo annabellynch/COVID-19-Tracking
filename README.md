@@ -91,8 +91,7 @@ daily = mutate(daily, percent_tested = (daily$totalTestResults/daily$population)
 
 # GRAPH NUM OF TESTS / STATE POPULATION
 options(scipen=999)
-ggplot(daily) + geom_col(aes(x=State, y=Percent_Tested, fill=population)) + scale_fill_gradient(low="blue", high="red") + ggtitle("COVID-19 Tests Compared to State Population") + theme(plot.title = element_text(hjust = 0.5)) + xlab("US States") + ylab("Percentage of State Population Tested") + labs(fill = "Population\n(in millions)")
-?geom_col
+ggplot(daily) + geom_col(aes(x=reorder(state,-percent_tested), y=percent_tested, fill=population)) + scale_fill_gradient(low="blue", high="red") + ggtitle("COVID-19 Tests Compared to State Population") + theme(plot.title = element_text(hjust = 0.5)) + xlab("US States") + ylab("Percentage of State Population Tested") + labs(fill = "Population\n(in millions)")
 
 # Add new percent positive columns to daily
 daily = mutate(daily, percent_p = (positive/totalTestResults)*100)
@@ -100,7 +99,54 @@ daily = mutate(daily, positive_thous = positive/1000)
 
 # GRAPH NUM OF POSITIVE / TOTAL TESTS
 options(scipen=999)
-ggplot(daily) + geom_col(aes(x=State, y=percent_p, fill=positive_thous)) + scale_fill_gradient(low="red", high="yellow") + ggtitle("COVID-19 Positive Tests Compared to Total Tests") + theme(plot.title = element_text(hjust = 0.5)) + xlab("US States") + ylab("Percentage of Positive Tests") + labs(fill = "# of Positive Tests\n(in thousands)")
+ggplot(daily) + geom_col(aes(x=reorder(state,-percent_p), y=percent_p, fill=positive_thous)) + scale_fill_gradient(low="red", high="yellow") + ggtitle("COVID-19 Positive Tests Compared to Total Tests") + theme(plot.title = element_text(hjust = 0.5)) + xlab("US States") + ylab("Percentage of Positive Tests") + labs(fill = "# of Positive Tests\n(in thousands)")
+
+
+# TOP STATES DATA AND GRAPHS
+
+# INDIVIDUAL STATES
+# Subsetting into state dataframes
+ny <- daily[ which(daily$state=='NY'), ]
+nj <- daily[ which(daily$state=='NJ'), ]
+ma <- daily[ which(daily$state=='MA'), ]
+il <- daily[ which(daily$state=='IL'), ]
+ca <- daily[ which(daily$state=='CA'), ]
+
+# DATA VISUALIZATIONS
+
+options(scipen=999)
+nyplot = ggplot(data = ny) + geom_line(mapping = aes(x=date, y=positive), colour = 'red')+
+  geom_line(mapping = aes(x=date,y=negative), colour='blue')+ 
+  geom_line(mapping = aes(x=date, y=totalTestResults), colour='black')+
+  xlab('Date')+ylab('Number of Tests')+ggtitle('Number of Tests for New York')+ theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_discrete(name = "Test Results", labels = c("total", "negative","positive"))
+nyplot
+
+njplot = ggplot(data = nj) + geom_line(mapping = aes(x=date, y=positive), color = 'red')+
+  geom_line(mapping = aes(x=date,y=negative), color='blue')+ 
+  geom_line(mapping = aes(x=date, y=totalTestResults), color='black')+ylim(0,800000)+
+  xlab('Date')+ylab('Number of Tests')+ggtitle('Number of Tests for New Jersey')+theme(plot.title = element_text(hjust = 0.5))
+njplot
+
+maplot = ggplot(data = ma) + geom_line(mapping = aes(x=date, y=positive), color = 'red')+
+  geom_line(mapping = aes(x=date,y=negative), color='blue')+ 
+  geom_line(mapping = aes(x=date, y=totalTestResults), color='black')+ ylim(0,800000)+
+  xlab('Date')+ylab('Number of Tests')+ggtitle('Number of Tests for Massachusets')+theme(plot.title = element_text(hjust = 0.5))
+maplot
+
+ilplot = ggplot(data = il) + geom_line(mapping = aes(x=date, y=positive), color = 'red')+
+  geom_line(mapping = aes(x=date,y=negative), color='blue')+ 
+  geom_line(mapping = aes(x=date, y=totalTestResults), color='black')+ ylim(0,800000) +
+  xlab('Date')+ylab('Number of Tests')+ggtitle('Number of Tests for Illinois')+theme(plot.title = element_text(hjust = 0.5))
+ilplot
+
+caplot = ggplot(data = ca) + geom_line(mapping = aes(x=date, y=positive), color = 'red')+
+  geom_line(mapping = aes(x=date,y=negative), color='blue')+ 
+  geom_line(mapping = aes(x=date, y=totalTestResults), color='black')+ ylim(0,800000)+
+  xlab('Date')+ylab('Number of Tests')+ggtitle('Number of Tests for California')+theme(plot.title = element_text(hjust = 0.5))
+caplot
+
+
 
 
 # -------------------------------------------------------- #
