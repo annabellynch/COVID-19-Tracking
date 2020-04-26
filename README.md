@@ -3,9 +3,12 @@
 library("readxl")
 library(tidyverse)
 library(xlsx)
+library(ggplot2)
+library(data.table)
+
 
 #reading the csv file
-daily <- read.csv("~/Downloads/daily.csv")
+daily <- fread('https://raw.githubusercontent.com/COVID19Tracking/covid-tracking-data/master/data/states_daily_4pm_et.csv')
 View(daily)
 
 
